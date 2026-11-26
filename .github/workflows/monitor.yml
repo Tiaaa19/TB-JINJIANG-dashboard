@@ -1,0 +1,41 @@
+name: Scheduled public opinion monitoring
+
+on:
+  schedule:
+    # GitHub Actions cron uses UTC. These correspond to 09:00, 14:00 and 17:00 Asia/Shanghai.
+    - cron: "0 1,6,9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tb-jinjiang-monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Run public monitoring
+        run: python scripts/monitor.py
+
+      - name: Commit monitoring updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html data/
+          if git diff --cached --quiet; then
+            echo "No monitoring changes"
+          else
+            git commit -m "chore: update TB JINJIANG monitoring data"
+            git push
+          fi
