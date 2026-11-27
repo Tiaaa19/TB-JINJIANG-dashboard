@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: tb-jinjiang-monitor
@@ -39,3 +40,9 @@ jobs:
             git commit -m "chore: update TB JINJIANG monitoring data"
             git push
           fi
+
+      - name: Deploy the updated dashboard
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main

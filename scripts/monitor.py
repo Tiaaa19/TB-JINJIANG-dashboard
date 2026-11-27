@@ -6,6 +6,7 @@ from __future__ import annotations
 import datetime as dt
 import html
 import json
+import os
 import re
 import urllib.parse
 import urllib.request
@@ -167,12 +168,19 @@ def inject(records: list[dict], updated: str) -> None:
     page, count = re.subn(r"const records=\[[\s\S]*?\];\nconst trend=", f"const records={payload};\nconst trend=", page, count=1)
     if count != 1:
         raise RuntimeError("Could not locate records block in index.html")
-    page = re.sub(r"数据更新 \d{4}-\d{2}-\d{2} \d{2}:\d{2}", f"数据更新 {updated}", page)
+    page = re.sub(r"数据更新 \d{4}-\d{2}-\d{2} \d{2}:\d{2}(?::\d{2})?", f"数据更新 {updated}", page)
     INDEX.write_text(page, encoding="utf-8")
 
 
 def main() -> None:
-    now = dt.datetime.now(dt.timezone(dt.timedelta(hours=8)))
+    requested_at = os.environ.get("MONITOR_REQUESTED_AT", "").strip()
+    try:
+        now = dt.datetime.fromisoformat(requested_at) if requested_at else dt.datetime.now(dt.timezone(dt.timedelta(hours=8)))
+        if now.tzinfo is None:
+            now = now.replace(tzinfo=dt.timezone(dt.timedelta(hours=8)))
+        now = now.astimezone(dt.timezone(dt.timedelta(hours=8)))
+    except ValueError:
+        now = dt.datetime.now(dt.timezone(dt.timedelta(hours=8)))
     records = list(BASELINE)
     existing = {item["url"] + "|" + item["source"] for item in records}
     errors = []
@@ -198,7 +206,7 @@ def main() -> None:
     STATE.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     history = DATA / f"run-{now.strftime('%Y%m%d-%H%M')}.json"
     history.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-    inject(records, now.strftime("%Y-%m-%d %H:%M"))
+    inject(records, now.strftime("%Y-%m-%d %H:%M:%S"))
     print(json.dumps({"records": len(records), "new": len(records) - len(BASELINE), "sogou": result["sogouWeixin"]["status"], "errors": len(errors)}, ensure_ascii=False))
 
 
