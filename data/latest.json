@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-27T17:27:25+08:00",
+  "updatedAt": "2026-11-28T16:31:22+08:00",
   "scheduleTimezone": "Asia/Shanghai",
   "queries": [
     "\"TB JINJIANG\" (CULines OR \"China United Lines\" OR 中联航运)",
@@ -12,16 +12,7 @@
     "status": "blocked",
     "url": "https://weixin.sogou.com/weixin?type=2&query=TB%20JINJIANG%20%E4%B8%AD%E8%81%94%E8%88%AA%E8%BF%90"
   },
-  "errors": [
-    {
-      "query": "\"TB JINJIANG\" (CULines OR \"China United Lines\" OR 中联航运)",
-      "error": "ParseError"
-    },
-    {
-      "query": "\"TB JINJIANG\" (collision OR PHOTINI OR \"general average\" OR 共同海损)",
-      "error": "ParseError"
-    }
-  ],
+  "errors": [],
   "records": [
     {
       "date": "11-26",
